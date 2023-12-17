@@ -123,7 +123,6 @@ function App() {
   }
   
   const getUserInfo = (id:string):USER|undefined =>{
-    // console.log(friendList);
     return friendList.find((user) => user.id === id);
   }
 
@@ -138,17 +137,14 @@ function App() {
 
   useEffect(() => {
     if (!me) return;
-    const fetchFriendList = () => {
       get_friendList();
-    };
-    const intervalId = setInterval(fetchFriendList, 500);
+  }, [loginstate, me]);
 
-    return () => clearInterval(intervalId);
-  }, [loginstate, me, get_friendList]);
 
   useEffect(()=>{
     get_chatroomList();
   },[friendList]);
+
 
   useEffect(()=>{
     if(openedRoomData){

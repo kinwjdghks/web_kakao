@@ -15,8 +15,7 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
     const inputImgRef = useRef<HTMLInputElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const scrollEndRef = useRef<HTMLDivElement>(null);
-
-    console.log(chatroomData);
+    const [showThumbnail,setShowThumbnail] = useState<string|undefined>(undefined);
     
     let profileImg:string = defaultImg;
     if(chatroomData.opp.img != null && chatroomData.opp.img != undefined) profileImg = chatroomData.opp.img;
@@ -47,9 +46,10 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
                 return response.json();
             })
             .then(chatData => {
-                console.log('chatdata:');
-                console.log(chatData); // Log the chat data
+                // console.log('chatdata:');
+                // console.log(chatData); // Log the chat data
                 setChatdata(chatData);
+                scroll_to_bottom();
             })
             .catch(error => {
                 console.error("Get chat data error:", error.message);
@@ -61,7 +61,7 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
         if(!inputTextRef.current) return;
         const content = inputTextRef.current.value.trim();
         if(content == '' && !inputImg){
-            console.log('nothing to uploads');
+            console.log('nothing to upload');
             return;
         }
 
@@ -72,7 +72,7 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
             img: inputImg,
             chatroomid: chatroomData.roomId,
         }
-        console.log(newChat);
+        // console.log(newChat);
         // send to database
         await fetch('http://localhost:8000/addChat',{
             method:"POST",
@@ -92,7 +92,7 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
                 inputTextRef!.current!.value = '';
                 setInputImg(undefined);
                 getChatData(chatroomData.roomId);
-                setTimeout(()=>scroll_to_bottom(),10);
+                scroll_to_bottom();
                 reload();
             })
             .catch((error) => {
@@ -110,19 +110,19 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
         }
     }
 
+    const wideViewHandler = (img:string|undefined) =>{
+        setShowThumbnail(img);
+    }
+
 
     useEffect(() => {
-        const fetchChatData = () => {
-          getChatData(chatroomData.roomId);
-        };
-        const intervalId = setInterval(fetchChatData, 500);
+        getChatData(chatroomData.roomId);
+    }, []);
+    
+    useEffect(()=>{
+        scroll_to_bottom();
+    },[chatdata])
 
-        return () => clearInterval(intervalId);
-      }, [getChatData, chatroomData.roomId]);
-
-      useEffect(()=>{
-        setTimeout(()=>scroll_to_bottom(),10);
-      },[])
 
     
     return <div className="(background) w-full h-full bg-blue-200 flex flex-col">
@@ -134,13 +134,14 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
             </div>
         </div>
         <div className="(main) w-full h-[calc(100%-19rem)] relative flex flex-col gap-2 overflow-y-scroll" ref={scrollRef}>
-            {chatdata.map((chat:Chat_t)=><Chat me={me} data={chat} getUserInfo={getUserInfo} key={chat.id} />)}
+            {chatdata.map((chat:Chat_t)=><Chat me={me} data={chat} click={wideViewHandler} getUserInfo={getUserInfo} key={chat.id} />)}
+            
             <div ref={scrollEndRef}></div>
         </div>
         <div className="(footer) w-full h-44 mt-auto relative bg-white pt-3 flex flex-col ">
             {inputImg && <div className="w-full h-60 absolute bottom-[3rem] bg-white flex items-center justify-center">
                 <IoCloseSharp className="w-6 h-6 absolute top-4 right-4 cursor-pointer" onClick={()=>setInputImg(undefined)}/>
-                <img className="h-4/5" draggable='false' src={inputImg} alt="chatimg"/></div>}
+                <img className="h-4/5" draggable='false' src={inputImg} alt="chatimg" /></div>}
             <textarea className="w-full h-full px-3 resize-none outline-none text-2xl border-none" ref={inputTextRef} onKeyDown={handleKeyPress}/>
             <div className="(action) w-full h-[4.5rem] p-2 flex items-center">
                 <div className="w-6 h-6 ml-2 relative cursor-pointer">
@@ -150,6 +151,10 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
                 <button className="h-full w-20 bg-yellow-400 rounded-md float-right ml-auto" onClick={sendChat}>전송</button>
             </div>
         </div>
+        {showThumbnail && <>
+            <div className="absolute w-full h-full top-0 left-0 bg-black opacity-80"></div>
+                <img className="w-full absolute top-1/2 -translate-y-1/2 left-0 " src={showThumbnail} onClick={()=>setShowThumbnail(undefined)}/>
+            </>}
     </div>
 }
 

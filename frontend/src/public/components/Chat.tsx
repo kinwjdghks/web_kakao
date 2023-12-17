@@ -11,7 +11,7 @@ export interface Chat_t{
     img?: string|undefined
 }
 
-const Chat = ({me, data, getUserInfo}:{me:string, data:Chat_t, getUserInfo:(id:string)=>USER|undefined}) => {
+const Chat = ({me, data, click ,getUserInfo}:{me:string, data:Chat_t, click:(img:string|undefined)=>void, getUserInfo:(id:string)=>USER|undefined}) => {
     
     const left = me !== data.who;
     const content = data.text ? data.text.replace(/(\n|\r\n)/g, "<br />") : '';
@@ -40,7 +40,7 @@ const Chat = ({me, data, getUserInfo}:{me:string, data:Chat_t, getUserInfo:(id:s
     };
     
 
-    return <div className={`h-min flex  ${left ? 'place-self-start' : 'place-self-end'}`}>    
+    return <div className={`h-min flex  ${left ? 'place-self-start' : 'place-self-end'}`} onClick={()=>{click(data.img)}}>    
                 {left && <img className="w-14 h-14 aspect-square rounded-[1.2rem] ml-4" src={profileImg} alt='profileImg'/>}
             <div className="flex flex-col gap-2">
                     {left && <p className="mx-2 text-2xl">{data.who}</p>}

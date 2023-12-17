@@ -1,7 +1,4 @@
-from fastapi import Depends, FastAPI, Request, WebSocket, Response, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import Depends, FastAPI, Response, HTTPException
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 from schema import *
@@ -18,34 +15,7 @@ class NotAuthenticatedException(Exception):
 app = FastAPI()
 origins = ["http://localhost:5173","localhost:5173"]
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections = []
-    
-    async def connect(self,websocket:WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-    
-    async def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
 
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
-manager = ConnectionManager()
-
-@app.websocket('/')
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await manager.broadcast(f"{data}")
-    except Exception as e:
-        pass
-    finally:
-        await manager.disconnect(websocket)
 
 app.add_middleware(
     CORSMiddleware,
