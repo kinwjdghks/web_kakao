@@ -16,7 +16,27 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
     const scrollRef = useRef<HTMLDivElement>(null);
     const scrollEndRef = useRef<HTMLDivElement>(null);
     const [showThumbnail,setShowThumbnail] = useState<string|undefined>(undefined);
-    
+    const socket = useRef<WebSocket>();
+
+    useEffect(() => {
+        // Create WebSocket connection
+        socket.current = new WebSocket('ws://localhost:8000/ws');
+
+        // Set up WebSocket event listeners
+        socket.current.onopen = () => console.log("Connected to WebSocket server.");
+        socket.current.onmessage = () => {
+            // console.log("Message from server:");
+            getChatData(chatroomData.roomId);
+        };
+        socket.current.onerror = (event) => console.error("WebSocket error observed:", event);
+        socket.current.onclose = () => console.log("Disconnected from WebSocket server.");
+
+        // Clean up function
+        return () => {
+            socket.current?.close();
+        };
+    }, []);
+
     let profileImg:string = defaultImg;
     if(chatroomData.opp.img != null && chatroomData.opp.img != undefined) profileImg = chatroomData.opp.img;
     
@@ -31,7 +51,6 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
         }
     }, []);
     
-    // if(!opp) return <div>loading...</div>
     const scroll_to_bottom = () =>{
         scrollEndRef.current?.scrollIntoView({block:'end', behavior: 'smooth' });
     }
@@ -94,6 +113,8 @@ const ChatRoom = ({me,chatroomData,close,getUserInfo,reload}:{me:string, chatroo
                 getChatData(chatroomData.roomId);
                 scroll_to_bottom();
                 reload();
+                socket?.current?.send("new chat");
+                
             })
             .catch((error) => {
                 console.error("Send error:", error.message);

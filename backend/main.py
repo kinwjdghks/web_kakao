@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Response, HTTPException
+from fastapi import Depends, FastAPI, Response, HTTPException, WebSocket
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 from schema import *
@@ -24,6 +24,38 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# WebSocket
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    async def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+socket_manager = ConnectionManager()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await socket_manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await socket_manager.broadcast("new chat")
+    except Exception as e:
+        pass
+    finally:
+        await socket_manager.disconnect(websocket)
+
+
 
 SECRET = "mySecretKey"
 manager = LoginManager(SECRET, '/login', use_cookie=True, custom_exception=NotAuthenticatedException)
