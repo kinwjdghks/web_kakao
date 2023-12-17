@@ -87,8 +87,7 @@ const ProfilePage = ({me,user,close,createChat}:{me:USER, user:USER, close:()=>v
             })
             .then(() => {
                 setLocalIntro(intro); // Update the local state
-                const user: USER = { id: me.id, img: me.img, intro: intro };
-                const newState:USER = user;
+                const newState:USER = { id: me.id, img: me.img, intro: intro };
                 setLoginState(newState);
                 setIntroEdit(false);
                 setModalOpen(false);

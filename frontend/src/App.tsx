@@ -30,6 +30,8 @@ function App() {
   const onOpenProfile = (profile:USER) => setOpenProfile([true,profile]);
   const navigator = useNavigate();
   const me = loginstate;
+
+  useEffect(()=>{console.log(me)});
   
 
   
@@ -46,7 +48,7 @@ function App() {
         })
         .then(friendsList => {
             // console.log("friendList:"); // 'friendsList' is your USER[] list
-            // console.log(friendsList);
+            console.log(friendsList);
             setFriendList(friendsList);
             // Further processing of 'friendsList' can be done here
             // For example, you can store it in the state or display it in the UI
@@ -110,10 +112,7 @@ function App() {
       console.log(result);
       get_chatroomList();
       setOpenProfile([false,null]);
-      const opp = me?.id == user1 ? user2 : user1;
-      const chatroom = chatroomList.filter((room)=>room.opp.id == opp)[0];
-      
-      setOpenedRoomData(chatroom);
+      setPage('chatlist');
     })
 
 }
@@ -156,7 +155,7 @@ function App() {
     <BackGround>
       {page === 'chatroom' && openedRoomData ? <ChatRoom me={me!.id!} chatroomData={openedRoomData} close={closeChatroom} getUserInfo={getUserInfo} reload={get_chatroomList}/> 
       : <Sidebar page={page} switchPage={(page:pageType)=>setPage(page)} reload={onFriendListReload}/>}
-      {page === 'friendlist' && <FriendList openProfile={onOpenProfile} me={me!} friendList={friendList}/>}
+      {page === 'friendlist' && <FriendList openProfile={onOpenProfile} friendList={friendList}/>}
       {page === 'chatlist' && <Chatlist chatroomList={chatroomList} openChat={openChat}/>}
       {openProfile[0] && <ProfilePage me={me!} user={openProfile[1]!} close={onCloseProfile} createChat={createChat} />}
     </BackGround>

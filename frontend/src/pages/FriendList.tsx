@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
 import ProfileBlock from "../public/components/ProfileBlock";
 import { USER } from "../App";
+import { loginState } from "../states/loggedIn";
+import { useRecoilValue } from "recoil";
 
-const FriendList = ({openProfile,me,friendList}:{openProfile:(profile:USER)=>void, me:USER, friendList:USER[]}): ReactNode => {
-  
+const FriendList = ({openProfile,friendList}:{openProfile:(profile:USER)=>void, friendList:USER[]}): ReactNode => {
+  const me:USER = useRecoilValue(loginState)!;
   return (
     <div className="flex-col flex-grow">
       <p className=" text-3xl font-bold p-6 mb-4">친구</p>
